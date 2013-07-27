@@ -23,3 +23,25 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+
+log "testlog" do
+  message ">>> testlog resource ran <<<"
+  action :nothing
+end
+
+# Get the Chef::CookbookVersion for this cookbook
+cb = run_context.cookbook_collection[cookbook_name]
+
+# Loop over the array of files
+cb.manifest['files'].each do |cbf|
+  # cbf['path'] is relative to the cookbook root, eg
+  #   'files/default/foo.txt'
+  # cbf['name'] strips the first two directories, eg
+  #   'foo.txt'
+  filename = cbf['name']
+
+  cookbook_file "/tmp/#{filename}" do
+    source filename
+    notifies :write, "log[testlog]"
+  end
+end
